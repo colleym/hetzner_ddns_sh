@@ -12,6 +12,9 @@ HETZNER_TOKEN=""
 # Zone ID (found via Hetzner Cloud API: GET /v1/zones)
 ZONE_ID=""
 
+# Zone name (your domain, e.g., "example.com")
+ZONE_NAME=""
+
 # Records to update - format: "name:type" (space-separated for multiple)
 # Examples:
 #   "dyndns:A"                     - Single IPv4 record

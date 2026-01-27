@@ -68,6 +68,18 @@ get_ipv6() {
     echo ""
 }
 
+get_dns_ip() {
+    local record_name="$1"
+    local record_type="$2"
+    local fqdn
+    if [ "$record_name" = "@" ]; then
+        fqdn="$ZONE_NAME"
+    else
+        fqdn="${record_name}.${ZONE_NAME}"
+    fi
+    dig +short "$fqdn" "$record_type" 2>/dev/null | head -1
+}
+
 # --- CACHE MANAGEMENT ---
 get_cached_ip() {
     local record_key="$1"
@@ -186,8 +198,8 @@ main() {
     send_heartbeat
 
     # Validate config
-    if [ -z "$HETZNER_TOKEN" ] || [ -z "$ZONE_ID" ] || [ -z "$RECORDS" ]; then
-        log "Error: HETZNER_TOKEN, ZONE_ID, and RECORDS must be set"
+    if [ -z "$HETZNER_TOKEN" ] || [ -z "$ZONE_ID" ] || [ -z "$ZONE_NAME" ] || [ -z "$RECORDS" ]; then
+        log "Error: HETZNER_TOKEN, ZONE_ID, ZONE_NAME, and RECORDS must be set"
         exit 1
     fi
 
@@ -227,19 +239,25 @@ main() {
             continue
         }
 
-        cache_key="${name}_${type}"
-        cached_ip=$(get_cached_ip "$cache_key")
+        # DNS lookup for update decision
+        dns_ip=$(get_dns_ip "$name" "$type")
+        log "DNS lookup ${name}.${ZONE_NAME} (${type}): ${dns_ip:-not found}"
 
-        if [ "$ip" = "$cached_ip" ]; then
+        # Compare with actual DNS, not cache
+        if [ "$ip" = "$dns_ip" ]; then
             log "No change for ${name} (${type}): ${ip}"
             continue
         fi
 
-        log "IP change detected for ${name} (${type}): ${cached_ip:-unknown} -> ${ip}"
+        # Cache for "old IP" in notifications
+        cache_key="${name}_${type}"
+        cached_ip=$(get_cached_ip "$cache_key")
+
+        log "IP change detected for ${name} (${type}): ${dns_ip:-unknown} -> ${ip}"
 
         if update_hetzner_dns "$name" "$type" "$ip"; then
             set_cached_ip "$cache_key" "$ip"
-            send_notification "$cached_ip" "$ip" "$name" "$type"
+            send_notification "${dns_ip:-$cached_ip}" "$ip" "$name" "$type"
             updates_made=$((updates_made + 1))
         fi
     done
