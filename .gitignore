@@ -1,0 +1,19 @@
+# Configuration with secrets
+config.sh
+.env
+
+# Runtime files
+*.log
+*.log.old
+.ip_cache
+last_wan_ip
+
+# Editor backups
+*~
+*.swp
+*.swo
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
