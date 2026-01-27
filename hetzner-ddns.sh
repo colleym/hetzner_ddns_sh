@@ -42,7 +42,7 @@ done
 # --- LOGGING ---
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S'): $1" >> "$LOG_FILE"
-    [ "$DRY_RUN" = "true" ] && echo "[DRY-RUN] $1"
+    [ "$DRY_RUN" = "true" ] && echo "[DRY-RUN] $1" || true
 }
 
 log_rotate() {
