@@ -48,3 +48,39 @@ cat hetzner-ddns.log
 - Use full curl path: `CURL="/usr/bin/curl"`
 - File size check uses `ls -l | awk` instead of `stat -c%s`
 - All file operations are POSIX-compliant
+
+## Hetzner Cloud DNS API
+
+**Base URL:** `https://api.hetzner.cloud/v1`
+
+**Authentication:** `Authorization: Bearer ${HETZNER_TOKEN}`
+
+### Endpoints
+
+**Get all records in a zone:**
+```bash
+GET /zones/{zone_id}/rrsets
+```
+
+**Get specific record:**
+```bash
+GET /zones/{zone_id}/rrsets/{name}/{type}
+```
+
+**Update record:**
+```bash
+POST /zones/{zone_id}/rrsets/{name}/{type}/actions/set_records
+Content-Type: application/json
+
+{
+  "records": [{"value": "1.2.3.4", "comment": "..."}]
+}
+```
+
+**Response:** Returns `{"action": {"status": "running"|"success", ...}}`
+
+### Example: Read current DNS value
+```bash
+curl -s "https://api.hetzner.cloud/v1/zones/${ZONE_ID}/rrsets/dyndns/A" \
+  -H "Authorization: Bearer ${HETZNER_TOKEN}" | jq -r '.rrset.records[0].value'
+```

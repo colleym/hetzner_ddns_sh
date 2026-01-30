@@ -71,13 +71,14 @@ get_ipv6() {
 get_dns_ip() {
     local record_name="$1"
     local record_type="$2"
-    local fqdn
-    if [ "$record_name" = "@" ]; then
-        fqdn="$ZONE_NAME"
-    else
-        fqdn="${record_name}.${ZONE_NAME}"
-    fi
-    dig +short "$fqdn" "$record_type" 2>/dev/null | head -1
+    local response
+
+    response=$($CURL -s --max-time 10 \
+        "https://api.hetzner.cloud/v1/zones/${ZONE_ID}/rrsets/${record_name}/${record_type}" \
+        -H "Authorization: Bearer ${HETZNER_TOKEN}" 2>/dev/null)
+
+    # Extract first record value from JSON response
+    echo "$response" | grep -o '"value"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"value"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/'
 }
 
 # --- CACHE MANAGEMENT ---
