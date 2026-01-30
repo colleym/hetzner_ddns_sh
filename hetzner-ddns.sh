@@ -127,11 +127,15 @@ update_hetzner_dns() {
             ]
         }" 2>&1)
 
-    if echo "$response" | grep -q "\"records\":"; then
+    # Check for success: action with running/success status, or records response
+    if echo "$response" | grep -q '"action"' && echo "$response" | grep -qE '"status":\s*"(running|success)"'; then
         log "DNS updated: ${record_name} (${record_type}) -> ${ip}"
         return 0
-    else
+    elif echo "$response" | grep -q '"error"'; then
         log "DNS update failed: ${record_name} (${record_type}) - Response: ${response}"
+        return 1
+    else
+        log "DNS update failed: ${record_name} (${record_type}) - Unexpected response: ${response}"
         return 1
     fi
 }

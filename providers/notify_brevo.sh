@@ -20,13 +20,7 @@ unset IFS
 RECIPIENTS_JSON="${RECIPIENTS_JSON}]"
 
 SUBJECT="IP Change: ${RECORD_NAME} (${RECORD_TYPE}) -> ${CURRENT_IP}"
-HTML_CONTENT="<html><body>
-<h3>Dynamic DNS Update</h3>
-<p><strong>Record:</strong> ${RECORD_NAME} (${RECORD_TYPE})</p>
-<p><strong>Old IP:</strong> ${OLD_IP:-unknown}</p>
-<p><strong>New IP:</strong> ${CURRENT_IP}</p>
-<p><em>Updated by hetzner-ddns</em></p>
-</body></html>"
+HTML_CONTENT="<html><body><h3>Dynamic DNS Update</h3><p><strong>Record:</strong> ${RECORD_NAME} (${RECORD_TYPE})</p><p><strong>Old IP:</strong> ${OLD_IP:-unknown}</p><p><strong>New IP:</strong> ${CURRENT_IP}</p><p><em>Updated by hetzner-ddns made by Marcel Colley and AI</em></p></body></html>"
 
 RESPONSE=$($CURL -s -X POST "https://api.brevo.com/v3/smtp/email" \
     -H "accept: application/json" \
